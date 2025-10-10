@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
@@ -35,6 +36,9 @@ export default function SignInCard() {
   // Auth hook kullanımı
   const { login, loading, error, clearError } = useAuth();
 
+  // Navigation hook
+  const navigate = useNavigate();
+
   // Input change handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,7 +66,9 @@ export default function SignInCard() {
     try {
       await login(formData.username, formData.password, formData.branchId);
       console.log("Giriş başarılı!");
-      // Buraya dashboard'a yönlendirme ekleyebilirsiniz
+
+      // Başarılı giriş sonrası dashboard'a yönlendir
+      navigate("/dashboard");
     } catch (error) {
       console.error("Giriş başarısız:", error);
     }

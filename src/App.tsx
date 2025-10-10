@@ -1,8 +1,9 @@
-import SignInPage from './features/auth/pages/SignInPage'
-import './App.css'
+import { RouterProvider } from "react-router-dom";
+import { router } from "./app/routes";
+import "./App.css";
 
 function App() {
-  return <SignInPage />
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
