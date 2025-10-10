@@ -13,12 +13,21 @@
     <PackageJsonDependenciesEmotionStyled Condition="$(PackageJsonDependenciesEmotionStyled) == ''">^11.14.1</PackageJsonDependenciesEmotionStyled>
     <PackageJsonDependenciesMuiIconsMaterial Condition="$(PackageJsonDependenciesMuiIconsMaterial) == ''">^7.3.4</PackageJsonDependenciesMuiIconsMaterial>
     <PackageJsonDependenciesMuiMaterial Condition="$(PackageJsonDependenciesMuiMaterial) == ''">^7.3.4</PackageJsonDependenciesMuiMaterial>
+    <PackageJsonDependenciesMuiXCharts Condition="$(PackageJsonDependenciesMuiXCharts) == ''">^8.14.0</PackageJsonDependenciesMuiXCharts>
+    <PackageJsonDependenciesMuiXDataGrid Condition="$(PackageJsonDependenciesMuiXDataGrid) == ''">^8.14.0</PackageJsonDependenciesMuiXDataGrid>
+    <PackageJsonDependenciesMuiXDataGridPro Condition="$(PackageJsonDependenciesMuiXDataGridPro) == ''">^8.14.0</PackageJsonDependenciesMuiXDataGridPro>
+    <PackageJsonDependenciesMuiXDatePickers Condition="$(PackageJsonDependenciesMuiXDatePickers) == ''">^8.14.0</PackageJsonDependenciesMuiXDatePickers>
+    <PackageJsonDependenciesMuiXTreeView Condition="$(PackageJsonDependenciesMuiXTreeView) == ''">^8.14.0</PackageJsonDependenciesMuiXTreeView>
+    <PackageJsonDependenciesReactSpringWeb Condition="$(PackageJsonDependenciesReactSpringWeb) == ''">^10.0.3</PackageJsonDependenciesReactSpringWeb>
+    <PackageJsonDependenciesDayjs Condition="$(PackageJsonDependenciesDayjs) == ''">^1.11.18</PackageJsonDependenciesDayjs>
     <PackageJsonDependenciesReact Condition="$(PackageJsonDependenciesReact) == ''">^19.1.1</PackageJsonDependenciesReact>
     <PackageJsonDependenciesReactDom Condition="$(PackageJsonDependenciesReactDom) == ''">^19.1.1</PackageJsonDependenciesReactDom>
+    <PackageJsonDependenciesReactRouterDom Condition="$(PackageJsonDependenciesReactRouterDom) == ''">^7.9.4</PackageJsonDependenciesReactRouterDom>
     <PackageJsonDevdependenciesEslintJs Condition="$(PackageJsonDevdependenciesEslintJs) == ''">^9.36.0</PackageJsonDevdependenciesEslintJs>
     <PackageJsonDevdependenciesTypesNode Condition="$(PackageJsonDevdependenciesTypesNode) == ''">^24.6.0</PackageJsonDevdependenciesTypesNode>
     <PackageJsonDevdependenciesTypesReact Condition="$(PackageJsonDevdependenciesTypesReact) == ''">^19.1.16</PackageJsonDevdependenciesTypesReact>
     <PackageJsonDevdependenciesTypesReactDom Condition="$(PackageJsonDevdependenciesTypesReactDom) == ''">^19.1.9</PackageJsonDevdependenciesTypesReactDom>
+    <PackageJsonDevdependenciesTypesReactRouterDom Condition="$(PackageJsonDevdependenciesTypesReactRouterDom) == ''">^5.3.3</PackageJsonDevdependenciesTypesReactRouterDom>
     <PackageJsonDevdependenciesVitejsPluginReact Condition="$(PackageJsonDevdependenciesVitejsPluginReact) == ''">^5.0.4</PackageJsonDevdependenciesVitejsPluginReact>
     <PackageJsonDevdependenciesEslint Condition="$(PackageJsonDevdependenciesEslint) == ''">^9.36.0</PackageJsonDevdependenciesEslint>
     <PackageJsonDevdependenciesEslintPluginReactHooks Condition="$(PackageJsonDevdependenciesEslintPluginReactHooks) == ''">^5.2.0</PackageJsonDevdependenciesEslintPluginReactHooks>
