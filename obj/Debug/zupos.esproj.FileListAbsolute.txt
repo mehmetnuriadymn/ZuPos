@@ -1,0 +1,2 @@
+C:\Users\mnady\OneDrive\Desktop\zupos\obj\Debug\zupos.esproj.CoreCompileInputs.cache
+C:\Users\mnady\OneDrive\Desktop\BMS\ZuPos\obj\Debug\zupos.esproj.CoreCompileInputs.cache

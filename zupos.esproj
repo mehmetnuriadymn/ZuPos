@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.2752196">
+  <PropertyGroup>
+    <StartupCommand>npm run dev</StartupCommand>
+    <JavaScriptTestRoot>src\</JavaScriptTestRoot>
+    <JavaScriptTestFramework>Vitest</JavaScriptTestFramework>
+    <!-- Allows the build (or compile) script located on package.json to run on Build -->
+    <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <!-- Folder where production build objects will be placed -->
+    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="src\app\" />
+    <Folder Include="src\assets\icons\" />
+    <Folder Include="src\assets\images\" />
+    <Folder Include="src\assets\styles\" />
+    <Folder Include="src\config\" />
+    <Folder Include="src\features\auth\services\" />
+    <Folder Include="src\features\dashboard\components\" />
+    <Folder Include="src\features\dashboard\hooks\" />
+    <Folder Include="src\features\dashboard\internals\components\" />
+    <Folder Include="src\features\dashboard\internals\data\" />
+    <Folder Include="src\features\dashboard\pages\" />
+    <Folder Include="src\features\donem-sonu\components\" />
+    <Folder Include="src\features\donem-sonu\hooks\" />
+    <Folder Include="src\features\donem-sonu\pages\" />
+    <Folder Include="src\features\donem-sonu\services\" />
+    <Folder Include="src\features\hareketler\components\" />
+    <Folder Include="src\features\hareketler\hooks\" />
+    <Folder Include="src\features\hareketler\pages\" />
+    <Folder Include="src\features\hareketler\services\" />
+    <Folder Include="src\features\personel-islemleri\components\" />
+    <Folder Include="src\features\personel-islemleri\hooks\" />
+    <Folder Include="src\features\personel-islemleri\pages\" />
+    <Folder Include="src\features\personel-islemleri\services\" />
+    <Folder Include="src\features\satis-raporlari\components\" />
+    <Folder Include="src\features\satis-raporlari\hooks\" />
+    <Folder Include="src\features\satis-raporlari\pages\" />
+    <Folder Include="src\features\satis-raporlari\services\" />
+    <Folder Include="src\features\satis-tanimlari\components\" />
+    <Folder Include="src\features\satis-tanimlari\hooks\" />
+    <Folder Include="src\features\satis-tanimlari\pages\" />
+    <Folder Include="src\features\satis-tanimlari\services\" />
+    <Folder Include="src\features\sistem-tanimlari\components\" />
+    <Folder Include="src\features\sistem-tanimlari\hooks\" />
+    <Folder Include="src\features\sistem-tanimlari\pages\" />
+    <Folder Include="src\features\sistem-tanimlari\services\" />
+    <Folder Include="src\features\stok-raporlari\components\" />
+    <Folder Include="src\features\stok-raporlari\hooks\" />
+    <Folder Include="src\features\stok-raporlari\pages\" />
+    <Folder Include="src\features\stok-raporlari\services\" />
+    <Folder Include="src\features\stok-tanimlari\components\" />
+    <Folder Include="src\features\stok-tanimlari\hooks\" />
+    <Folder Include="src\features\stok-tanimlari\pages\" />
+    <Folder Include="src\features\stok-tanimlari\services\" />
+    <Folder Include="src\shared\components\data-display\" />
+    <Folder Include="src\shared\components\layout\Sidebar\" />
+    <Folder Include="src\shared\components\ui\Button\" />
+    <Folder Include="src\shared\components\ui\Card\" />
+    <Folder Include="src\shared\components\ui\Input\" />
+    <Folder Include="src\shared\components\ui\Loading\" />
+    <Folder Include="src\shared\components\ui\Modal\" />
+    <Folder Include="src\shared\components\ui\Select\" />
+    <Folder Include="src\shared\components\ui\Table\" />
+    <Folder Include="src\shared\hooks\" />
+    <Folder Include="src\shared\types\" />
+    <Folder Include="src\shared\utils\" />
+    <Folder Include="src\theme\customizations\" />
+  </ItemGroup>
+</Project>
