@@ -6,8 +6,8 @@
   "name": "localhost (Chrome)",
   "type": "chrome",
   "request": "launch",
-  "url": "http://localhost:52414",
-  "webRoot": "C:\\Users\\mnady\\OneDrive\\Desktop\\BMS\\ZuPos"
+  "url": "http://localhost:57033",
+  "webRoot": "C:\\Users\\mnady\\OneDrive\\Desktop\\zupos"
 }</LaunchJsonTarget>
   </PropertyGroup>
 </Project>

@@ -67,7 +67,6 @@ export default function SignInCard() {
       await login(formData.username, formData.password, formData.branchId);
       console.log("Giriş başarılı!");
 
-      // Başarılı giriş sonrası dashboard'a yönlendir
       navigate("/dashboard");
     } catch (error) {
       console.error("Giriş başarısız:", error);

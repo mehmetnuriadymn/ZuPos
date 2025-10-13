@@ -24,7 +24,6 @@ export const useAuth = () => {
 
       try {
         // 2. AuthService üzerinden API'ye giriş isteği gönder
-        // Bu adımda: React → AuthService → ApiClient → C# API → Database
         const response = await authService.login(username, password, branchId);
 
         // 3. API'den dönen response'u kontrol et
