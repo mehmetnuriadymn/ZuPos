@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import SelectContent from "./SelectContent";
 import MenuContent from "./MenuContent";
 import OptionsMenu from "./OptionsMenu";
+import { useAuth } from "../../features/auth/hooks/useAuth";
 
 const drawerWidth = 240;
 
@@ -23,6 +24,8 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  const { user } = useAuth();
+
   return (
     <Drawer
       variant="permanent"
@@ -65,19 +68,28 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="small"
-          alt="Riley Carter"
-          src="/static/images/avatar/7.jpg"
-          sx={{ width: 36, height: 36 }}
-        />
+          alt={user?.userName || "Kullanıcı"}
+          sx={{
+            width: 36,
+            height: 36,
+            bgcolor: "primary.main",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+          }}
+        >
+          {user?.userName?.charAt(0).toUpperCase() || "K"}
+        </Avatar>
         <Box sx={{ mr: "auto" }}>
           <Typography
             variant="body2"
             sx={{ fontWeight: 500, lineHeight: "16px" }}
           >
-            Riley Carter
+            {user?.userName || "Kullanıcı"}
           </Typography>
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            riley@email.com
+            {user?.branchName
+              ? `${user.branchName} (${user.branchNo})`
+              : "Şube bilgisi yok"}
           </Typography>
         </Box>
         <OptionsMenu />

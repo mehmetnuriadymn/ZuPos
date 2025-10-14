@@ -15,8 +15,26 @@ export class ApiClient {
   private async handleResponse<T>(
     response: globalThis.Response
   ): Promise<Response<T>> {
-    const responseData = (await response.json()) as Response<T>;
-    console.log("API Response:", responseData); // Debug için
+    let responseData: Response<T>;
+
+    try {
+      const text = await response.text();
+
+      if (!text) {
+        throw new Error("Boş response alındı");
+      }
+
+      responseData = JSON.parse(text) as Response<T>;
+    } catch (parseError) {
+      console.error("JSON Parse Error:", parseError);
+      const errorData: ApiError = {
+        message: `API response parse edilemedi: ${
+          parseError instanceof Error ? parseError.message : "Bilinmeyen hata"
+        }`,
+        statusCode: response.status,
+      };
+      throw errorData;
+    }
 
     if (!response.ok) {
       const errorData: ApiError = {
