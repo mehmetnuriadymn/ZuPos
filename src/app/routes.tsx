@@ -1,8 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import AppLayout from "../shared/layout/AppLayout";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PublicRoute from "./components/PublicRoute";
+import { ProtectedRoute, PublicRoute } from "./components/RouteGuard";
 import LoadingSpinner from "../shared/components/LoadingSpinner";
 
 // Lazy loading components for performance

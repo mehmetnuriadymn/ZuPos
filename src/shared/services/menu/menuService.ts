@@ -17,7 +17,7 @@ export class MenuService {
   }
 
   /**
-   * Belirli bir role göre menü listesini çeker (Admin only)
+   * Belirli bir role göre menü listesini çeker
    * @param roleId Rol ID
    * @param branchId Şube ID
    * @param languageId Dil ID (varsayılan: "1")
