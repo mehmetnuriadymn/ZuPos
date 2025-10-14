@@ -16,22 +16,72 @@ import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
+import InventoryIcon from "@mui/icons-material/Inventory";
+import StoreIcon from "@mui/icons-material/Store";
+import CategoryIcon from "@mui/icons-material/Category";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useMenu } from "../hooks/useMenu";
 import { useAuth } from "../../features/auth/hooks/useAuth";
+import type { MenuModel } from "../types/menu";
 
-// Menü ikonu mapping'i
+// Backend controller'ları -> Frontend route'ları mapping
+const CONTROLLER_TO_ROUTE_MAP: Record<string, string> = {
+  // Inventory (Stok Tanımlamaları)
+  Store: "/inventory/store-definition",
+  AccountPeriod: "/inventory/account-period",
+  MainGroup: "/inventory/main-group",
+  MainGroup2: "/inventory/main-group-2",
+  SubGroup: "/inventory/sub-group",
+  "Products.aspx": "/inventory/product-definition",
+  "Recipe.aspx": "/inventory/recipes",
+  "Groups.aspx": "/inventory/groups",
+  UnitType: "/inventory/unit-type",
+  "RevenueCenter.aspx": "/inventory/revenue-center",
+
+  // Sales (Satış) - Gelecekte eklenecek
+  Sales: "/sales/overview",
+  Orders: "/sales/orders",
+  Customers: "/sales/customers",
+
+  // Reports (Raporlar) - Gelecekte eklenecek
+  Reports: "/reports/overview",
+  StockReport: "/reports/stock-report",
+  SalesReport: "/reports/sales-report",
+} as const;
+
+// Menü ikonu mapping'i - Backend menu adlarına göre
 const getMenuIcon = (menuName: string) => {
   const iconMap: Record<string, React.ReactElement> = {
+    // Dashboard
     Home: <HomeRoundedIcon />,
     "Ana Sayfa": <HomeRoundedIcon />,
     Dashboard: <HomeRoundedIcon />,
+
+    // Stok Tanımlamaları (Inventory)
+    "STOK TANIMLARI": <InventoryIcon />,
+    "Stok Tanımlamaları": <InventoryIcon />,
+    "Depo Tanımlama": <StoreIcon />,
+    "Hesap Dönemi": <CategoryIcon />,
+    Gruplar: <CategoryIcon />,
+    "Ürün Tanımlama": <InventoryIcon />,
+    "Gelir Merkezi": <StoreIcon />,
+    Reçeteler: <MenuIcon />,
+    Çevrimler: <MenuIcon />,
+    "Üst Grup Tanımlama": <CategoryIcon />,
+    "Ana Grup Tanımlama": <CategoryIcon />,
+    "Alt Grup Tanımlama": <CategoryIcon />,
+
+    // Reports
     Analytics: <AnalyticsRoundedIcon />,
     Analitik: <AnalyticsRoundedIcon />,
     Raporlar: <AnalyticsRoundedIcon />,
+
+    // Users/Customers
     Clients: <PeopleRoundedIcon />,
     Müşteriler: <PeopleRoundedIcon />,
     Kullanıcılar: <PeopleRoundedIcon />,
+
+    // Tasks
     Tasks: <AssignmentRoundedIcon />,
     Görevler: <AssignmentRoundedIcon />,
     İşlemler: <AssignmentRoundedIcon />,
@@ -80,10 +130,26 @@ export default function MenuContent() {
     }
   };
 
-  const handleSubMenuClick = (subMenuId: number, subMenuUrl?: string) => {
-    if (subMenuUrl && subMenuUrl !== "#") {
-      setSelectedMenu(subMenuId);
-      navigate(subMenuUrl);
+  const handleSubMenuClick = (subItem: MenuModel) => {
+    // Controller'a göre route'u bul
+    const route =
+      CONTROLLER_TO_ROUTE_MAP[subItem.controller || ""] ||
+      CONTROLLER_TO_ROUTE_MAP[subItem.url || ""];
+
+    if (route) {
+      setSelectedMenu(subItem.menuId);
+      navigate(route);
+    } else {
+      // Route bulunamazsa console'a uyarı ver
+      console.warn(
+        `Route not found for controller: ${subItem.controller}, url: ${subItem.url}`
+      );
+
+      // Fallback: URL varsa direkt kullan
+      if (subItem.url && subItem.url !== "#") {
+        setSelectedMenu(subItem.menuId);
+        navigate(`/${subItem.url}`);
+      }
     }
   };
 
@@ -199,9 +265,7 @@ export default function MenuContent() {
                         <ListItem key={subMenu.menuId} disablePadding>
                           <ListItemButton
                             selected={isSubSelected}
-                            onClick={() =>
-                              handleSubMenuClick(subMenu.menuId, subMenu.url)
-                            }
+                            onClick={() => handleSubMenuClick(subMenu)}
                             sx={{
                               pl: 4,
                               minHeight: 40,
