@@ -11,6 +11,7 @@ import AppNavbar from "./AppNavbar";
 import SideMenu from "./SideMenu";
 import Header from "./Header";
 import AppTheme from "../theme/AppTheme";
+import { ToastProvider } from "../components/ui";
 import {
   chartsCustomizations,
   dataGridCustomizations,
@@ -28,41 +29,43 @@ const xThemeComponents = {
 export default function AppLayout(props: { disableCustomTheme?: boolean }) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      <CssBaseline enableColorScheme />
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
-        <AppNavbar />
+      <ToastProvider position="top-right" maxToasts={4} defaultDuration={5000}>
+        <CssBaseline enableColorScheme />
+        <Box sx={{ display: "flex" }}>
+          <SideMenu />
+          <AppNavbar />
 
-        {/* Main content area - Header + Page Content */}
-        <Box
-          component="main"
-          sx={(theme) => ({
-            flexGrow: 1,
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-              : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
-          })}
-        >
-          <Stack
-            spacing={2}
-            sx={{
-              alignItems: "center",
-              mx: 3,
-              pb: 5,
-              mt: { xs: 8, md: 0 },
-            }}
+          {/* Main content area - Header + Page Content */}
+          <Box
+            component="main"
+            sx={(theme) => ({
+              flexGrow: 1,
+              backgroundColor: theme.vars
+                ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+                : alpha(theme.palette.background.default, 1),
+              overflow: "auto",
+            })}
           >
-            {/* Header - Tüm sayfalarda görünür */}
-            <Header />
+            <Stack
+              spacing={2}
+              sx={{
+                alignItems: "center",
+                mx: 3,
+                pb: 5,
+                mt: { xs: 8, md: 0 },
+              }}
+            >
+              {/* Header - Tüm sayfalarda görünür */}
+              <Header />
 
-            {/* Page Content */}
-            <Box sx={{ width: "100%" }}>
-              <Outlet />
-            </Box>
-          </Stack>
+              {/* Page Content */}
+              <Box sx={{ width: "100%" }}>
+                <Outlet />
+              </Box>
+            </Stack>
+          </Box>
         </Box>
-      </Box>
+      </ToastProvider>
     </AppTheme>
   );
 }

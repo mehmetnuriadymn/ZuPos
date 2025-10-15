@@ -10,6 +10,8 @@ import PageContainer from "../../../shared/layout/PageContainer";
 import {
   GridTable,
   usePagination,
+  ConfirmationDialog,
+  useToast,
   type GridColumn,
   type GridAction,
   type GridFilter,
@@ -107,6 +109,7 @@ const mockStoreData: StoreDefinitionRow[] = [
 ];
 
 export default function StoreDefinition() {
+  const toast = useToast();
   const [stores, setStores] = useState<StoreDefinitionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<GridFilter[]>([]);
@@ -117,6 +120,12 @@ export default function StoreDefinition() {
   const [selectedStore, setSelectedStore] = useState<StoreDefinitionRow | null>(
     null
   );
+
+  // Confirmation dialog states
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    store: null as StoreDefinitionRow | null,
+  });
 
   // Pagination hook kullanımı
   const { pagination, handlePageChange, handlePageSizeChange } = usePagination({
@@ -236,16 +245,39 @@ export default function StoreDefinition() {
           ...data,
         } as StoreDefinitionRow;
         setStores((prev) => [...prev, newStore]);
+        toast.success(`"${data.name}" deposu başarıyla oluşturuldu!`);
       } else if (drawerMode === "edit" && selectedStore) {
         // Mevcut kaydı güncelleme
         setStores((prev) =>
           prev.map((s) => (s.id === selectedStore.id ? { ...s, ...data } : s))
         );
+        toast.success(`"${data.name}" deposu başarıyla güncellendi!`);
       }
     } catch (error) {
       console.error("Kaydetme hatası:", error);
+      toast.error("Kaydetme işleminde bir hata oluştu!");
       throw error; // Drawer'da hata gösterilsin
     }
+  };
+
+  // Delete handlers
+  const handleDeleteClick = (row: StoreDefinitionRow) => {
+    setDeleteDialog({
+      open: true,
+      store: row,
+    });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteDialog.store) {
+      setStores((prev) => prev.filter((s) => s.id !== deleteDialog.store!.id));
+      toast.success(`"${deleteDialog.store.name}" deposu başarıyla silindi!`);
+      setDeleteDialog({ open: false, store: null });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({ open: false, store: null });
   };
 
   // Grid actions tanımlaması
@@ -262,13 +294,7 @@ export default function StoreDefinition() {
       label: "Sil",
       icon: <DeleteIcon />,
       color: "error",
-      onClick: (row) => {
-        if (
-          confirm(`"${row.name}" kaydını silmek istediğinizden emin misiniz?`)
-        ) {
-          setStores((prev) => prev.filter((s) => s.id !== row.id));
-        }
-      },
+      onClick: handleDeleteClick,
     },
   ];
 
@@ -329,6 +355,23 @@ export default function StoreDefinition() {
           mode={drawerMode}
           store={selectedStore}
           onSave={handleSave}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmationDialog
+          open={deleteDialog.open}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          type="error"
+          title="Depo Silme Onayı"
+          message={`"${
+            deleteDialog.store?.name || ""
+          }" deposunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+          confirmLabel="Sil"
+          cancelLabel="İptal"
+          confirmColor="error"
+          size="medium"
+          showIcon={true}
         />
       </Stack>
     </PageContainer>

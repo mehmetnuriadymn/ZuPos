@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 
 // Kendi UI component'lerimizi kullan
-import { Button, Input, Card } from "../../../shared/components/ui";
+import { Button, Input, Card, useToast } from "../../../shared/components/ui";
 import ForgotPassword from "./ForgotPassword";
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from "./CustomIcons";
 import { useAuth } from "../hooks";
@@ -39,6 +39,9 @@ export default function SignInCard() {
   // Navigation hook
   const navigate = useNavigate();
 
+  // Toast hook
+  const toast = useToast();
+
   // Input change handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -60,25 +63,39 @@ export default function SignInCard() {
     event.preventDefault();
 
     if (!validateInputs()) {
+      toast.warning("Lütfen tüm alanları doğru şekilde doldurun.");
       return;
     }
 
     try {
       await login(formData.username, formData.password, formData.branchId);
-      console.log("Giriş başarılı!");
 
-      navigate("/dashboard");
+      // Başarılı giriş mesajı
+      toast.success("Giriş başarılı! Yönlendiriliyorsunuz...", {
+        title: "Hoş Geldiniz!",
+      });
+
+      // Kısa bir gecikme ile yönlendirme
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     } catch (error) {
       console.error("Giriş başarısız:", error);
+      toast.error("Kullanıcı adı, şifre veya şube bilgileri hatalı!", {
+        title: "Giriş Başarısız",
+        duration: 6000,
+      });
     }
   };
 
   const validateInputs = () => {
     let isValid = true;
+    const errors: string[] = [];
 
     if (!formData.username || formData.username.trim().length < 2) {
       setUsernameError(true);
       setUsernameErrorMessage("Lütfen geçerli bir kullanıcı adı girin.");
+      errors.push("Kullanıcı adı geçersiz");
       isValid = false;
     } else {
       setUsernameError(false);
@@ -88,6 +105,7 @@ export default function SignInCard() {
     if (!formData.password || formData.password.length < 6) {
       setPasswordError(true);
       setPasswordErrorMessage("Şifre en az 6 karakter olmalıdır.");
+      errors.push("Şifre çok kısa");
       isValid = false;
     } else {
       setPasswordError(false);
@@ -101,10 +119,19 @@ export default function SignInCard() {
     ) {
       setBranchError(true);
       setBranchErrorMessage("Lütfen geçerli bir şube numarası girin.");
+      errors.push("Şube numarası geçersiz");
       isValid = false;
     } else {
       setBranchError(false);
       setBranchErrorMessage("");
+    }
+
+    // Validation hatalarını toast ile göster
+    if (!isValid && errors.length > 0) {
+      toast.warning(`Form hatası: ${errors.join(", ")}`, {
+        title: "Lütfen Aşağıdaki Alanları Kontrol Edin",
+        duration: 5000,
+      });
     }
 
     return isValid;
@@ -248,7 +275,12 @@ export default function SignInCard() {
         <Button
           fullWidth
           variant="outline"
-          onClick={() => alert("Google ile giriş yapın")}
+          onClick={() => {
+            toast.info("Google ile giriş yakında aktif olacak!", {
+              title: "Geliştirme Aşamasında",
+              duration: 3000,
+            });
+          }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <GoogleIcon />
@@ -258,7 +290,12 @@ export default function SignInCard() {
         <Button
           fullWidth
           variant="outline"
-          onClick={() => alert("Facebook ile giriş yapın")}
+          onClick={() => {
+            toast.info("Facebook ile giriş yakında aktif olacak!", {
+              title: "Geliştirme Aşamasında",
+              duration: 3000,
+            });
+          }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <FacebookIcon />

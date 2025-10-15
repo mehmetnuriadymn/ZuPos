@@ -4,10 +4,11 @@ import Box from "@mui/material/Box";
 import SignInCard from "../components/SignInCard";
 import Content from "../components/Content";
 import ColorModeIconDropdown from "../../../shared/theme/ColorModeIconDropdown";
+import { ToastProvider } from "../../../shared/components/ui";
 
 export default function SignInPage() {
   return (
-    <>
+    <ToastProvider position="top-right" maxToasts={3} defaultDuration={4000}>
       <CssBaseline enableColorScheme />
       {/* Theme switcher - üst sağ köşede */}
       <Box
@@ -70,6 +71,6 @@ export default function SignInPage() {
           </Stack>
         </Stack>
       </Stack>
-    </>
+    </ToastProvider>
   );
 }
