@@ -1,20 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Chip,
-  Stack,
-  Alert,
-} from "@mui/material";
+import { Typography, Button, Chip, Stack } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -22,254 +7,329 @@ import {
   Store as StoreIcon,
 } from "@mui/icons-material";
 import PageContainer from "../../../shared/layout/PageContainer";
-import type { Store } from "../types/inventory.types";
+import {
+  GridTable,
+  usePagination,
+  type GridColumn,
+  type GridAction,
+  type GridFilter,
+} from "../../../shared/components/ui";
+import { StoreDefinitionDrawer } from "../components";
 
-// Mock data - Gerçek API integration için
-const mockStores: Store[] = [
+// Store Definition Interface - şu anda depo tablosu için kullanılıyor
+interface StoreDefinitionRow extends Record<string, unknown> {
+  id: number;
+  name: string;
+  code: string;
+  transferType: string;
+  status: boolean;
+}
+
+// Mock data - İstenen formatta test verileri
+const mockStoreData: StoreDefinitionRow[] = [
   {
-    storeId: 1,
-    storeCode: "STORE001",
-    storeName: "Ana Depo",
-    storeType: "MAIN",
-    branchId: 253,
-    isActive: true,
-    address: "Merkez Mahallesi, İstanbul",
-    phone: "+90 212 555 0001",
-    email: "ana.depo@zupos.com",
-    createdDate: "2024-01-15T10:30:00Z",
+    id: 1,
+    name: "Belediye",
+    code: "9",
+    transferType: "Sayim",
+    status: true,
   },
   {
-    storeId: 2,
-    storeCode: "STORE002",
-    storeName: "Şube Deposu 1",
-    storeType: "BRANCH",
-    branchId: 253,
-    isActive: true,
-    address: "Kadıköy, İstanbul",
-    phone: "+90 212 555 0002",
-    createdDate: "2024-02-10T14:15:00Z",
+    id: 2,
+    name: "Şehit Mehmetcik",
+    code: "8",
+    transferType: "Sayim",
+    status: true,
   },
   {
-    storeId: 3,
-    storeCode: "STORE003",
-    storeName: "Sanal Depo",
-    storeType: "VIRTUAL",
-    branchId: 253,
-    isActive: false,
-    address: "Online Platform",
-    createdDate: "2024-03-05T09:45:00Z",
+    id: 3,
+    name: "Günlüklük",
+    code: "7",
+    transferType: "Sayim",
+    status: false,
+  },
+  {
+    id: 4,
+    name: "Merkez Depo",
+    code: "10",
+    transferType: "Devir",
+    status: true,
+  },
+  {
+    id: 5,
+    name: "Şube 1 Deposu",
+    code: "11",
+    transferType: "Transfer",
+    status: true,
+  },
+  {
+    id: 6,
+    name: "Şube 2 Deposu",
+    code: "12",
+    transferType: "Transfer",
+    status: false,
+  },
+  {
+    id: 7,
+    name: "Geçici Depo",
+    code: "13",
+    transferType: "Sayim",
+    status: true,
+  },
+  {
+    id: 8,
+    name: "Yedek Depo",
+    code: "14",
+    transferType: "Devir",
+    status: false,
+  },
+  {
+    id: 9,
+    name: "Ana Depo A",
+    code: "15",
+    transferType: "Transfer",
+    status: true,
+  },
+  {
+    id: 10,
+    name: "Ana Depo B",
+    code: "16",
+    transferType: "Devir",
+    status: true,
+  },
+  {
+    id: 11,
+    name: "Bölge Deposu 1",
+    code: "17",
+    transferType: "Sayim",
+    status: false,
   },
 ];
 
 export default function StoreDefinition() {
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<StoreDefinitionRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<GridFilter[]>([]);
+
+  // Drawer states
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<"create" | "edit">("create");
+  const [selectedStore, setSelectedStore] = useState<StoreDefinitionRow | null>(
+    null
+  );
+
+  // Pagination hook kullanımı
+  const { pagination, handlePageChange, handlePageSizeChange } = usePagination({
+    total: stores.length,
+    initialPage: 0,
+    initialPageSize: 10,
+    pageSizeOptions: [5, 10, 25, 50],
+  });
 
   useEffect(() => {
     // Mock data loading
     setLoading(true);
     setTimeout(() => {
-      setStores(mockStores);
+      setStores(mockStoreData);
       setLoading(false);
     }, 1000);
   }, []);
 
-  const handleAddStore = () => {
-    // TODO: Modal açılacak veya form sayfasına yönlendirilecek
-    alert("Yeni Depo Ekleme - Henüz implement edilmedi");
+  // Grid kolonları tanımlaması
+  const columns: GridColumn<StoreDefinitionRow>[] = [
+    {
+      id: "name",
+      label: "Adı",
+      field: "name",
+      sortable: true,
+      filterable: true,
+      minWidth: 200,
+      priority: 1, // Mobilde göster
+      render: (value) => (
+        <Typography variant="body2" fontWeight="600" color="primary">
+          {String(value)}
+        </Typography>
+      ),
+    },
+    {
+      id: "code",
+      label: "Kodu",
+      field: "code",
+      sortable: true,
+      filterable: true,
+      align: "center",
+      width: 100,
+      priority: 2,
+      render: (value) => (
+        <Chip
+          label={String(value)}
+          variant="outlined"
+          color="secondary"
+          size="small"
+        />
+      ),
+    },
+    {
+      id: "transferType",
+      label: "Devir Tipi",
+      field: "transferType",
+      sortable: true,
+      filterable: true,
+      align: "center",
+      width: 120,
+      priority: 3,
+      render: (value) => (
+        <Chip
+          label={String(value)}
+          color="info"
+          variant="outlined"
+          size="small"
+        />
+      ),
+    },
+    {
+      id: "status",
+      label: "Durum",
+      field: "status",
+      sortable: true,
+      filterable: false,
+      align: "center",
+      width: 100,
+      priority: 4,
+      render: (value) => (
+        <Chip
+          label={value ? "Aktif" : "Aktif Değil"}
+          color={value ? "success" : "error"}
+          size="small"
+          variant="filled"
+        />
+      ),
+    },
+  ];
+
+  // Drawer handlers
+  const handleAddNew = () => {
+    setDrawerMode("create");
+    setSelectedStore(null);
+    setDrawerOpen(true);
   };
 
-  const handleEditStore = (store: Store) => {
-    // TODO: Edit modal açılacak
-    alert(`Depo Düzenle: ${store.storeName}`);
+  const handleEdit = (row: StoreDefinitionRow) => {
+    setDrawerMode("edit");
+    setSelectedStore(row);
+    setDrawerOpen(true);
   };
 
-  const handleDeleteStore = (store: Store) => {
-    if (
-      confirm(
-        `"${store.storeName}" deposunu silmek istediğinizden emin misiniz?`
-      )
-    ) {
-      setStores((prev) => prev.filter((s) => s.storeId !== store.storeId));
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    setSelectedStore(null);
+  };
+
+  const handleSave = async (data: Omit<StoreDefinitionRow, "id">) => {
+    try {
+      if (drawerMode === "create") {
+        // Yeni kayıt ekleme
+        const newId =
+          stores.length > 0 ? Math.max(...stores.map((s) => s.id)) + 1 : 1;
+        const newStore = {
+          id: newId,
+          ...data,
+        } as StoreDefinitionRow;
+        setStores((prev) => [...prev, newStore]);
+      } else if (drawerMode === "edit" && selectedStore) {
+        // Mevcut kaydı güncelleme
+        setStores((prev) =>
+          prev.map((s) => (s.id === selectedStore.id ? { ...s, ...data } : s))
+        );
+      }
+    } catch (error) {
+      console.error("Kaydetme hatası:", error);
+      throw error; // Drawer'da hata gösterilsin
     }
   };
 
-  const getStoreTypeLabel = (type: Store["storeType"]) => {
-    const typeLabels = {
-      MAIN: "Ana Depo",
-      BRANCH: "Şube Deposu",
-      VIRTUAL: "Sanal Depo",
-    };
-    return typeLabels[type];
-  };
+  // Grid actions tanımlaması
+  const actions: GridAction<StoreDefinitionRow>[] = [
+    {
+      id: "edit",
+      label: "Güncelle",
+      icon: <EditIcon />,
+      color: "primary",
+      onClick: handleEdit,
+    },
+    {
+      id: "delete",
+      label: "Sil",
+      icon: <DeleteIcon />,
+      color: "error",
+      onClick: (row) => {
+        if (
+          confirm(`"${row.name}" kaydını silmek istediğinizden emin misiniz?`)
+        ) {
+          setStores((prev) => prev.filter((s) => s.id !== row.id));
+        }
+      },
+    },
+  ];
 
-  const getStoreTypeColor = (type: Store["storeType"]) => {
-    const colors = {
-      MAIN: "primary" as const,
-      BRANCH: "secondary" as const,
-      VIRTUAL: "info" as const,
-    };
-    return colors[type];
+  const handleFilterChange = (newFilters: GridFilter[]) => {
+    setFilters(newFilters);
   };
-
-  if (loading) {
-    return (
-      <PageContainer title="Depo Tanımlama">
-        <Typography>Yükleniyor...</Typography>
-      </PageContainer>
-    );
-  }
 
   return (
     <PageContainer title="Depo Tanımlama">
       <Stack spacing={3}>
-        {/* Header Actions */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+        {/* Grid Table */}
+        <GridTable<StoreDefinitionRow>
+          columns={columns}
+          rows={stores}
+          keyField="id"
+          title="Depo Listesi"
+          subtitle={`Toplam ${stores.length} depo kaydı bulunmaktadır`}
+          headerActions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddNew}
+              size="large"
+            >
+              Yeni Depo Ekle
+            </Button>
+          }
+          loading={loading}
+          actions={actions}
+          filtering={filters}
+          onFilterChange={handleFilterChange}
+          // Pagination
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          // Mobile Settings
+          showMobileCards={true}
+          mobileCardExpansion={true}
+          mobileCardTitle="name"
+          // Table Settings
+          hover={true}
+          stickyHeader={false}
+          empty={{
+            message: "Henüz depo tanımı bulunamadı",
+            description:
+              "Yeni depo eklemek için yukarıdaki butonu kullanabilirsiniz.",
+            icon: <StoreIcon sx={{ fontSize: 64, color: "text.secondary" }} />,
           }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <StoreIcon color="primary" />
-            <Typography variant="h6" color="text.secondary">
-              Toplam {stores.length} depo kayıtlı
-            </Typography>
-          </Box>
+          onRowClick={(row) => {
+            console.log("Satır tıklandı:", row);
+          }}
+        />
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddStore}
-            size="large"
-          >
-            Yeni Depo Ekle
-          </Button>
-        </Box>
-
-        {/* Info Alert */}
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Bu sayfa henüz geliştirme aşamasındadır. Şu anda mock veriler
-          görüntülenmektedir.
-        </Alert>
-
-        {/* Stores Table */}
-        <TableContainer component={Paper} elevation={2}>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "grey.50" }}>
-                <TableCell>
-                  <strong>Depo Kodu</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Depo Adı</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Tip</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Durum</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Adres</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Telefon</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Oluşturma Tarihi</strong>
-                </TableCell>
-                <TableCell align="center">
-                  <strong>İşlemler</strong>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {stores.map((store) => (
-                <TableRow
-                  key={store.storeId}
-                  hover
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="600">
-                      {store.storeCode}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{store.storeName}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={getStoreTypeLabel(store.storeType)}
-                      color={getStoreTypeColor(store.storeType)}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={store.isActive ? "Aktif" : "Pasif"}
-                      color={store.isActive ? "success" : "error"}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {store.address || "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {store.phone || "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {new Date(store.createdDate).toLocaleDateString("tr-TR")}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box
-                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
-                    >
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEditStore(store)}
-                        color="primary"
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteStore(store)}
-                        color="error"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {stores.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ py: 4 }}
-                    >
-                      Henüz hiç depo kaydı bulunmuyor. Yeni depo eklemek için
-                      yukarıdaki butonu kullanın.
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {/* Store Definition Drawer */}
+        <StoreDefinitionDrawer
+          open={drawerOpen}
+          onClose={handleDrawerClose}
+          mode={drawerMode}
+          store={selectedStore}
+          onSave={handleSave}
+        />
       </Stack>
     </PageContainer>
   );
