@@ -1,117 +1,39 @@
-import { useState, useEffect } from "react";
-import { Typography, Button, Chip, Stack } from "@mui/material";
+import { useState } from "react";
+import { Typography, Button, Chip, Stack, Alert } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Store as StoreIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import PageContainer from "../../../shared/layout/PageContainer";
 import {
   GridTable,
   usePagination,
   ConfirmationDialog,
-  useToast,
   type GridColumn,
   type GridAction,
   type GridFilter,
 } from "../../../shared/components/ui";
 import { StoreDefinitionDrawer } from "../components";
-
-// Store Definition Interface - şu anda depo tablosu için kullanılıyor
-interface StoreDefinitionRow extends Record<string, unknown> {
-  id: number;
-  name: string;
-  code: string;
-  transferType: string;
-  status: boolean;
-}
-
-// Mock data - İstenen formatta test verileri
-const mockStoreData: StoreDefinitionRow[] = [
-  {
-    id: 1,
-    name: "Belediye",
-    code: "9",
-    transferType: "Sayim",
-    status: true,
-  },
-  {
-    id: 2,
-    name: "Şehit Mehmetcik",
-    code: "8",
-    transferType: "Sayim",
-    status: true,
-  },
-  {
-    id: 3,
-    name: "Günlüklük",
-    code: "7",
-    transferType: "Sayim",
-    status: false,
-  },
-  {
-    id: 4,
-    name: "Merkez Depo",
-    code: "10",
-    transferType: "Devir",
-    status: true,
-  },
-  {
-    id: 5,
-    name: "Şube 1 Deposu",
-    code: "11",
-    transferType: "Transfer",
-    status: true,
-  },
-  {
-    id: 6,
-    name: "Şube 2 Deposu",
-    code: "12",
-    transferType: "Transfer",
-    status: false,
-  },
-  {
-    id: 7,
-    name: "Geçici Depo",
-    code: "13",
-    transferType: "Sayim",
-    status: true,
-  },
-  {
-    id: 8,
-    name: "Yedek Depo",
-    code: "14",
-    transferType: "Devir",
-    status: false,
-  },
-  {
-    id: 9,
-    name: "Ana Depo A",
-    code: "15",
-    transferType: "Transfer",
-    status: true,
-  },
-  {
-    id: 10,
-    name: "Ana Depo B",
-    code: "16",
-    transferType: "Devir",
-    status: true,
-  },
-  {
-    id: 11,
-    name: "Bölge Deposu 1",
-    code: "17",
-    transferType: "Sayim",
-    status: false,
-  },
-];
+import { useStore } from "../hooks";
+import type { StoreDefinitionRow } from "../types/inventory.types";
 
 export default function StoreDefinition() {
-  const toast = useToast();
-  const [stores, setStores] = useState<StoreDefinitionRow[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Custom hook - API entegrasyonu
+  const {
+    stores,
+    stockParameters,
+    loading,
+    error,
+    userInfo,
+    loadStores,
+    createStore,
+    updateStore,
+    deleteStore,
+  } = useStore();
+
   const [filters, setFilters] = useState<GridFilter[]>([]);
 
   // Drawer states
@@ -134,15 +56,6 @@ export default function StoreDefinition() {
     initialPageSize: 10,
     pageSizeOptions: [5, 10, 25, 50],
   });
-
-  useEffect(() => {
-    // Mock data loading
-    setLoading(true);
-    setTimeout(() => {
-      setStores(mockStoreData);
-      setLoading(false);
-    }, 1000);
-  }, []);
 
   // Grid kolonları tanımlaması
   const columns: GridColumn<StoreDefinitionRow>[] = [
@@ -234,28 +147,25 @@ export default function StoreDefinition() {
     setSelectedStore(null);
   };
 
-  const handleSave = async (data: Omit<StoreDefinitionRow, "id">) => {
+  const handleSave = async (
+    formData: import("../types/inventory.types").StoreFormData
+  ) => {
     try {
+      let success = false;
+
       if (drawerMode === "create") {
-        // Yeni kayıt ekleme
-        const newId =
-          stores.length > 0 ? Math.max(...stores.map((s) => s.id)) + 1 : 1;
-        const newStore = {
-          id: newId,
-          ...data,
-        } as StoreDefinitionRow;
-        setStores((prev) => [...prev, newStore]);
-        toast.success(`"${data.name}" deposu başarıyla oluşturuldu!`);
+        // Yeni kayıt ekleme - API çağrısı
+        success = await createStore(formData);
       } else if (drawerMode === "edit" && selectedStore) {
-        // Mevcut kaydı güncelleme
-        setStores((prev) =>
-          prev.map((s) => (s.id === selectedStore.id ? { ...s, ...data } : s))
-        );
-        toast.success(`"${data.name}" deposu başarıyla güncellendi!`);
+        // Mevcut kaydı güncelleme - API çağrısı
+        success = await updateStore(selectedStore.id, formData);
+      }
+
+      if (success) {
+        handleDrawerClose();
       }
     } catch (error) {
       console.error("Kaydetme hatası:", error);
-      toast.error("Kaydetme işleminde bir hata oluştu!");
       throw error; // Drawer'da hata gösterilsin
     }
   };
@@ -268,16 +178,26 @@ export default function StoreDefinition() {
     });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteDialog.store) {
-      setStores((prev) => prev.filter((s) => s.id !== deleteDialog.store!.id));
-      toast.success(`"${deleteDialog.store.name}" deposu başarıyla silindi!`);
-      setDeleteDialog({ open: false, store: null });
+      const success = await deleteStore(
+        deleteDialog.store.id,
+        deleteDialog.store.name
+      );
+
+      if (success) {
+        setDeleteDialog({ open: false, store: null });
+      }
     }
   };
 
   const handleDeleteCancel = () => {
     setDeleteDialog({ open: false, store: null });
+  };
+
+  // Refresh handler
+  const handleRefresh = () => {
+    loadStores();
   };
 
   // Grid actions tanımlaması
@@ -305,6 +225,22 @@ export default function StoreDefinition() {
   return (
     <PageContainer title="Depo Tanımlama">
       <Stack spacing={3}>
+        {/* User Info Badge (Debugging - opsiyonel) */}
+        {userInfo && (
+          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+            <Chip label={`Şube: ${userInfo.branchId}`} size="small" />
+            <Chip label={`Kullanıcı: ${userInfo.userName}`} size="small" />
+            <Chip label={`Rol: ${userInfo.roleId}`} size="small" />
+          </Stack>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Grid Table */}
         <GridTable<StoreDefinitionRow>
           columns={columns}
@@ -313,14 +249,26 @@ export default function StoreDefinition() {
           title="Depo Listesi"
           subtitle={`Toplam ${stores.length} depo kaydı bulunmaktadır`}
           headerActions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleAddNew}
-              size="large"
-            >
-              Yeni Depo Ekle
-            </Button>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                size="large"
+                disabled={loading}
+              >
+                Yenile
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleAddNew}
+                size="large"
+                disabled={loading}
+              >
+                Yeni Depo Ekle
+              </Button>
+            </Stack>
           }
           loading={loading}
           actions={actions}
@@ -354,6 +302,7 @@ export default function StoreDefinition() {
           onClose={handleDrawerClose}
           mode={drawerMode}
           store={selectedStore}
+          stockParameters={stockParameters}
           onSave={handleSave}
         />
 

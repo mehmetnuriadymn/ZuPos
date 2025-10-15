@@ -14,36 +14,36 @@ import {
 } from "@mui/material";
 import { FormDrawer } from "../../../shared/components/ui";
 import type { FormDrawerProps } from "../../../shared/components/ui";
-
-// StoreDefinitionRow type'ını import edelim
-interface StoreDefinitionRow {
-  id: number;
-  name: string;
-  code: string;
-  transferType: string;
-  status: boolean;
-}
+import type {
+  StoreDefinitionRow,
+  StoreFormData,
+  StockParameter,
+} from "../types/inventory.types";
 
 interface StoreDefinitionDrawerProps extends Omit<FormDrawerProps, "children"> {
   store?: StoreDefinitionRow | null; // Düzenleme modunda gelen veri
   mode: "create" | "edit"; // Oluşturma veya düzenleme modu
-  onSave: (data: Omit<StoreDefinitionRow, "id">) => Promise<void>;
+  stockParameters: StockParameter[]; // API'den gelen StockParameter listesi (TypeID=2)
+  onSave: (data: StoreFormData) => Promise<void>;
 }
 
 export default function StoreDefinitionDrawer({
   store = null,
   mode = "create",
+  stockParameters,
   onSave,
   open,
   onClose,
   ...drawerProps
 }: StoreDefinitionDrawerProps) {
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    transferType: "Sayim",
-    status: true,
+  // Form state - SQL schema'ya uygun
+  const [formData, setFormData] = useState<StoreFormData>({
+    name: "", // SQL: nvarchar(150)
+    code: "", // SQL: nchar(10) - Alfanumerik
+    storePeriodClosureType: 0, // SQL: int - StockParameterID
+    address: "", // SQL: nvarchar(max)
+    gsm: "", // SQL: nchar(11)
+    status: true, // SQL: bit
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -55,20 +55,28 @@ export default function StoreDefinitionDrawer({
       setFormData({
         name: store.name,
         code: store.code,
-        transferType: store.transferType,
+        storePeriodClosureType: store.transferTypeId, // Gerçek StockParameter ID
+        address: store.address || "",
+        gsm: store.gsm || "",
         status: store.status,
       });
     } else if (mode === "create") {
       // Yeni oluştururken temiz form
+      // İlk StockParameter'ı default olarak seç (varsa)
+      const defaultStockParamId =
+        stockParameters.length > 0 ? stockParameters[0].stockParameterId : 0;
+
       setFormData({
         name: "",
         code: "",
-        transferType: "Sayim",
+        storePeriodClosureType: defaultStockParamId, // SQL: int
+        address: "",
+        gsm: "",
         status: true,
       });
     }
     setErrors({});
-  }, [store, mode, open]);
+  }, [store, mode, open, stockParameters]);
 
   // Form validation
   const validateForm = () => {
@@ -82,12 +90,24 @@ export default function StoreDefinitionDrawer({
 
     if (!formData.code.trim()) {
       newErrors.code = "Depo kodu zorunludur";
-    } else if (!/^\d+$/.test(formData.code)) {
-      newErrors.code = "Depo kodu sadece sayı olmalıdır";
+    } else if (formData.code.length > 10) {
+      newErrors.code =
+        "Depo kodu maksimum 10 karakter olabilir (SQL: nchar(10))";
     }
 
-    if (!formData.transferType) {
-      newErrors.transferType = "Devir tipi seçilmelidir";
+    if (!formData.storePeriodClosureType) {
+      newErrors.storePeriodClosureType = "Devir tipi seçilmelidir";
+    }
+
+    // GSM opsiyonel ama girilmişse format ve uzunluk kontrolü
+    if (formData.gsm) {
+      // Sadece rakam kontrol et
+      const cleanGsm = formData.gsm.replace(/[\s\-+()]/g, "");
+      if (!/^[0-9]*$/.test(cleanGsm)) {
+        newErrors.gsm = "Telefon sadece rakam içermelidir";
+      } else if (cleanGsm.length > 11) {
+        newErrors.gsm = "Telefon maksimum 11 rakam olabilir (SQL: nchar(11))";
+      }
     }
 
     setErrors(newErrors);
@@ -97,7 +117,7 @@ export default function StoreDefinitionDrawer({
   // Input change handler
   const handleInputChange = (
     field: keyof typeof formData,
-    value: string | boolean
+    value: string | boolean | number
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -135,14 +155,21 @@ export default function StoreDefinitionDrawer({
       setFormData({
         name: store.name,
         code: store.code,
-        transferType: store.transferType,
+        storePeriodClosureType: store.transferTypeId,
+        address: store.address || "",
+        gsm: store.gsm || "",
         status: store.status,
       });
     } else {
+      const defaultStockParamId =
+        stockParameters.length > 0 ? stockParameters[0].stockParameterId : 0;
+
       setFormData({
         name: "",
         code: "",
-        transferType: "Sayim",
+        storePeriodClosureType: defaultStockParamId, // SQL: int
+        address: "",
+        gsm: "",
         status: true,
       });
     }
@@ -152,17 +179,24 @@ export default function StoreDefinitionDrawer({
   // Form dirty check
   const isDirty = () => {
     if (mode === "create") {
+      const defaultStockParamId =
+        stockParameters.length > 0 ? stockParameters[0].stockParameterId : 0;
+
       return (
         formData.name !== "" ||
         formData.code !== "" ||
-        formData.transferType !== "Sayim" ||
+        formData.storePeriodClosureType !== defaultStockParamId ||
+        formData.address !== "" ||
+        formData.gsm !== "" ||
         formData.status !== true
       );
     } else if (store) {
       return (
         formData.name !== store.name ||
         formData.code !== store.code ||
-        formData.transferType !== store.transferType ||
+        formData.storePeriodClosureType !== store.transferTypeId ||
+        formData.address !== (store.address || "") ||
+        formData.gsm !== (store.gsm || "") ||
         formData.status !== store.status
       );
     }
@@ -213,42 +247,88 @@ export default function StoreDefinitionDrawer({
           value={formData.code}
           onChange={(e) => handleInputChange("code", e.target.value)}
           error={!!errors.code}
-          helperText={errors.code}
-          placeholder="Sadece sayı"
+          helperText={
+            errors.code || "Alfanumerik, max 10 karakter (SQL: nchar(10))"
+          }
+          placeholder="Örn: ABC123, DEF456"
           inputProps={{
-            pattern: "[0-9]*",
-            inputMode: "numeric",
+            maxLength: 10,
           }}
         />
 
-        {/* Devir Tipi */}
-        <FormControl fullWidth required error={!!errors.transferType}>
-          <InputLabel>Devir Tipi</InputLabel>
+        {/* Devir Tipi - StockParameter Selection (TypeID=2) */}
+        <FormControl fullWidth required error={!!errors.storePeriodClosureType}>
+          <InputLabel>Devir Tipi (Stok Parametre)</InputLabel>
           <Select
-            value={formData.transferType}
-            onChange={(e) => handleInputChange("transferType", e.target.value)}
-            label="Devir Tipi"
+            value={formData.storePeriodClosureType}
+            onChange={(e) =>
+              handleInputChange("storePeriodClosureType", e.target.value)
+            }
+            label="Devir Tipi (Stok Parametre)"
             size="medium"
+            disabled={stockParameters.length === 0}
           >
-            <MenuItem value="Sayim">
-              <Chip label="Sayim" color="info" size="small" sx={{ mr: 1 }} />
-              Sayım İşlemleri
-            </MenuItem>
-            <MenuItem value="Devir">
-              <Chip label="Devir" color="warning" size="small" sx={{ mr: 1 }} />
-              Devir İşlemleri
-            </MenuItem>
-            <MenuItem value="Transfer">
-              <Chip
-                label="Transfer"
-                color="success"
-                size="small"
-                sx={{ mr: 1 }}
-              />
-              Transfer İşlemleri
-            </MenuItem>
+            {stockParameters.length === 0 ? (
+              <MenuItem value={0} disabled>
+                <Typography color="text.secondary">Yükleniyor...</Typography>
+              </MenuItem>
+            ) : (
+              stockParameters.map((param) => (
+                <MenuItem
+                  key={param.stockParameterId}
+                  value={param.stockParameterId}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Chip
+                      label={param.code}
+                      color="info"
+                      size="small"
+                      variant="outlined"
+                    />
+                    <Typography>{param.name}</Typography>
+                  </Box>
+                </MenuItem>
+              ))
+            )}
           </Select>
+          {errors.storePeriodClosureType && (
+            <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+              {errors.storePeriodClosureType}
+            </Typography>
+          )}
         </FormControl>
+
+        {/* Adres */}
+        <TextField
+          label="Adres"
+          fullWidth
+          multiline
+          rows={2}
+          size="medium"
+          value={formData.address}
+          onChange={(e) => handleInputChange("address", e.target.value)}
+          error={!!errors.address}
+          helperText={errors.address}
+          placeholder="Depo adresi (opsiyonel)"
+        />
+
+        {/* GSM */}
+        <TextField
+          label="Telefon (GSM)"
+          fullWidth
+          size="medium"
+          value={formData.gsm}
+          onChange={(e) => handleInputChange("gsm", e.target.value)}
+          error={!!errors.gsm}
+          helperText={
+            errors.gsm || "Örn: 05551234567, max 11 rakam (SQL: nchar(11))"
+          }
+          placeholder="05551234567"
+          inputProps={{
+            inputMode: "tel",
+            maxLength: 11,
+          }}
+        />
 
         {/* Durum */}
         <FormControlLabel

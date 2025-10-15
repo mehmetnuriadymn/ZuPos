@@ -242,17 +242,25 @@ export default function GridTable<T extends Record<string, unknown>>({
         {/* Mobile Cards */}
         {!loading && paginatedRows.length > 0 && (
           <Box>
-            {paginatedRows.map((row) => (
-              <GridMobileCard
-                key={String(row[keyField])}
-                row={row}
-                columns={columns}
-                actions={actions}
-                onRowClick={onRowClick}
-                expandable={mobileCardExpansion}
-                titleField={mobileCardTitle}
-              />
-            ))}
+            {paginatedRows.map((row, index) => {
+              const rowKey = row[keyField];
+              const uniqueKey =
+                rowKey !== undefined && rowKey !== null
+                  ? String(rowKey)
+                  : `mobile-fallback-${index}`;
+
+              return (
+                <GridMobileCard
+                  key={uniqueKey}
+                  row={row}
+                  columns={columns}
+                  actions={actions}
+                  onRowClick={onRowClick}
+                  expandable={mobileCardExpansion}
+                  titleField={mobileCardTitle}
+                />
+              );
+            })}
           </Box>
         )}
 
@@ -463,9 +471,25 @@ export default function GridTable<T extends Record<string, unknown>>({
                 const rowKey = row[keyField] as keyof T;
                 const isSelected = selection.includes(rowKey);
 
+                // Debug: undefined key kontrolü
+                if (rowKey === undefined || rowKey === null) {
+                  console.warn(
+                    `⚠️ GridTable: Row at index ${rowIndex} has undefined/null key field "${String(
+                      keyField
+                    )}"`,
+                    row
+                  );
+                }
+
+                // Fallback: key undefined ise rowIndex kullan
+                const uniqueKey =
+                  rowKey !== undefined && rowKey !== null
+                    ? String(rowKey)
+                    : `fallback-${rowIndex}`;
+
                 return (
                   <TableRow
-                    key={String(rowKey)}
+                    key={uniqueKey}
                     hover={hover}
                     selected={isSelected}
                     sx={{
